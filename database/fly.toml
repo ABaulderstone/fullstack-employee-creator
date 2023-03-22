@@ -1,0 +1,19 @@
+# fly.toml file generated for employees-project-db on 2023-03-09T17:39:08+11:00
+
+app = "employees-project-db"
+kill_signal = "SIGINT"
+kill_timeout = 5
+
+[env]
+  MYSQL_DATABASE = "employees_project"
+  MYSQL_USER = "testUser"
+
+[build]
+  image = "mysql:8"
+
+[experimental]
+  cmd = ["--default-authentication-plugin", "mysql_native_password", "--datadir", "/data/mysql", "--performance-schema=OFF", "--innodb-buffer-pool-size", "64M"]
+
+[mounts]
+  destination = "/data"
+  source = "mysqldata"
