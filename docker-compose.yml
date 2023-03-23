@@ -2,17 +2,31 @@ version: '3.8'
 
 services:
   app:
-    build: ./employee-creator-backend
-    image: your-image-name:latest
+    build:
+      context: ./employee-creator-backend
+      dockerfile: Dockerfile.dev
     ports:
       - '3000:8080'
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-    command: sh -c 'sleep 30 && java -jar /app/employee-creator-backend.jar'
+    volumes:
+      - ./src:/app/src
+      - ./pom.xml:/app/pom.xml
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl --fail http://localhost:8080/actuator/health || exit 1',
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
   db:
     image: mysql:latest
     environment:
@@ -38,6 +52,8 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    environment:
+      VITE_REACT_APP_API_URL: http://app:8080
 
 volumes:
   mysql-data:
